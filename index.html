@@ -126,6 +126,12 @@ tbody tr.warn-row{background:var(--red-l)}
 tbody tr.warn-row:hover{background:#fde9e9}
 .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ell{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 移动端：表格保持最小宽度，在容器内横向滑动，整页不横滚 */
+@media (max-width:768px){
+  table{min-width:880px}
+  .tbl-wrap{max-height:70vh}
+  .topbar{padding:10px 14px}
+}
 .empty{padding:56px;text-align:center;color:var(--text3);font-size:13.5px}
 .tbl-foot{padding:11px 16px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--text2);border-top:1px solid var(--border)}
 /* ---------- 漏斗 ---------- */
