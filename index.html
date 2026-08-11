@@ -125,11 +125,14 @@ tbody tr.warn-row{background:var(--red-l)}
 tbody tr.warn-row:hover{background:#fde9e9}
 .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ell{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* 移动端：内容区可横向滑动(画布模式)，表格保持最小宽度 */
+/* 移动端：仅表格/漏斗等宽内容区域内部横向滚动，其余不动 */
 @media (max-width:768px){
-  .wrap{padding:14px 12px 60px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .wrap{padding:14px 12px 60px}
+  .page{overflow:hidden;max-width:100vw}          /* 页面容器不被子元素撑宽 */
   table{min-width:880px}
-  .tbl-wrap{max-height:70vh}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:70vh}
+  .funnel-box{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:16px 4px}
+  .fstep{min-width:700px}
   .topbar{padding:10px 14px}
 }
 .empty{padding:56px;text-align:center;color:var(--text3);font-size:13.5px}
