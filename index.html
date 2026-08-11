@@ -125,20 +125,43 @@ tbody tr.warn-row{background:var(--red-l)}
 tbody tr.warn-row:hover{background:#fde9e9}
 .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ell{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* 移动端：顶栏固定+Tab内部横滑；内容区整体横向画布；整页宽度不动 */
+/* 移动端：整页锁宽固定，卡片单列堆叠，仅表格/漏斗/Tab 在各自容器内横滑 */
 @media (max-width:768px){
-  /* 顶栏：宽度固定不撑开，Tab 按钮超出时内部横滑 */
-  .topbar{flex-wrap:nowrap;padding:10px 12px;overflow:hidden}
+  /* 整页绝对锁死横向滚动；overflow-x:clip 不建立滚动容器，不会吞噬内部横滑(Safari 需 iOS16+) */
+  html,body{overflow-x:clip}
+  /* 顶栏：brand 固定，Tab 多时内部横滑，顶栏本身不撑开 */
+  .topbar{flex-wrap:nowrap;align-items:center;padding:9px 12px;width:100%;gap:8px}
   .brand{font-size:15px;white-space:nowrap;flex-shrink:0}
-  .tabs{overflow-x:auto;flex-wrap:nowrap;flex:1;min-width:0;margin-left:8px;-webkit-overflow-scrolling:touch}
+  .tabs{overflow-x:auto;flex-wrap:nowrap;flex:1;min-width:0;margin-left:6px;-webkit-overflow-scrolling:touch}
   .tabs::-webkit-scrollbar{display:none}
-  /* 内容区：像画布一样可整体左右平移，宽内容(表格/漏斗)跟它一起滑 */
-  .wrap{padding:14px 12px 60px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .page{overflow:visible;max-width:none}
-  table{min-width:880px}
-  .tbl-wrap{overflow:visible;max-height:none}
-  .funnel-box{overflow:visible;padding:16px 4px}
-  .fstep{min-width:700px}
+  .tab{padding:8px 13px;font-size:13.5px}
+  /* 内容区不横向滚动，最大宽度锁死 */
+  .wrap{padding:14px 12px 72px;overflow:visible;max-width:100%}
+  .page{max-width:100%;overflow:visible}
+  /* 卡片类强制单列堆叠，间距更舒服 */
+  .kpi-grid,.money-grid,.warn-grid{grid-template-columns:1fr;gap:12px}
+  .kpi,.mcard,.wcard{min-width:0}
+  .cols{grid-template-columns:1fr;gap:12px}
+  .card{box-shadow:0 1px 2px rgba(20,35,70,.05),0 3px 10px rgba(20,35,70,.05)}
+  /* 表格：只在表格容器内横滑，页面不动 */
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:none;border-radius:10px}
+  table{min-width:640px}
+  thead th{position:sticky;top:0}
+  .ell{max-width:170px}
+  /* 漏斗：容器内横滑，避免被截断 */
+  .funnel-box{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:16px 6px}
+  .fstep{min-width:540px}
+  /* 筛选与表单：满宽、单列更好用 */
+  .filters{padding:13px 14px}
+  .frow{gap:8px}
+  .search{width:100%;min-width:0}
+  .fgrid{grid-template-columns:1fr}
+  /* 弹窗贴边 */
+  .mask{padding:14px 10px}
+  .modal{max-width:100%}
+  /* 路局行收窄 */
+  .bureau-row .nm{width:74px;font-size:12px}
+  .bureau-row .nums{width:104px;font-size:11px}
 }
 .empty{padding:56px;text-align:center;color:var(--text3);font-size:13.5px}
 .tbl-foot{padding:11px 16px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--text2);border-top:1px solid var(--border)}
