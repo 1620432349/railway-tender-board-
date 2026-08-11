@@ -234,6 +234,7 @@ tbody tr.warn-row:hover{background:#fde9e9}
     <button class="tab" data-p="p4">异常预警<span class="dot" id="warnDot">0</span></button>
     <button class="tab" data-p="p5">竞商文件库</button>
     <button class="tab" data-p="p6">开行计划</button>
+    <button class="tab" data-p="p7" id="tabWins">中商台账</button>
   </div>
   <div class="topbtns" id="adminBar">
     <button class="btn" onclick="importExcel()">Excel导入</button>
@@ -381,6 +382,27 @@ tbody tr.warn-row:hover{background:#fde9e9}
     </tr></thead><tbody id="planBody"></tbody></table></div>
     <div class="tbl-foot"><span id="planFoot"></span><span style="color:var(--text3)">开行计划为中标后执行数据，从「国铁统一竞商通知」开行计划汇总导入</span></div>
   </div>
+
+<!-- ============ 7 中商台账 ============ -->
+<div class="page" id="p7">
+  <div class="card filters">
+    <div class="frow">
+      <span class="flabel">路局</span>
+      <select id="fWinBureau"><option value="">全部</option></select>
+      <input type="text" class="search" id="fWinKw" placeholder="搜索 招商项目 / 包件 / 线路">
+    </div>
+  </div>
+  <div class="card">
+    <div class="kpi-grid" id="winKpis" style="margin-bottom:14px"></div>
+    <div class="tbl-wrap"><table><thead><tr>
+      <th style="width:34px">#</th><th>路局</th><th>竞商类型</th><th>招商项目名称</th><th>竞商线路</th><th>包件号</th>
+      <th class="num">硬卧</th><th class="num">软卧</th><th class="num">总铺位</th><th>中商开行日</th><th>中商企业</th>
+      <th class="num">底价/万</th><th class="num">中商/万</th><th class="num">溢价/万</th><th>中商通知书</th>
+    </tr></thead><tbody id="winBody"></tbody></table></div>
+    <div class="tbl-foot"><span id="winFoot"></span><span style="color:var(--text3)">中商台账为内部经营数据，仅后台（?admin=1）可见；数据由「2026年5月旅游专列竞商台账」手工录入，可在后台维护</span></div>
+  </div>
+</div>
+
 </div>
 
 </div>
@@ -1382,6 +1404,8 @@ document.getElementById("fKw").oninput=renderTable;
 document.getElementById("fDocKw").oninput=renderDocs;
 document.getElementById("fPlanBureau").onchange=renderPlans;
 document.getElementById("fPlanKw").oninput=renderPlans;
+document.getElementById("fWinBureau").onchange=renderWins;
+document.getElementById("fWinKw").oninput=renderWins;
 document.querySelectorAll(".mask").forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.remove("on")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".mask").forEach(m=>m.classList.remove("on"))});
 
@@ -1426,12 +1450,44 @@ function importPlans(){
     r.readAsArrayBuffer(file);};
   inp.click();
 }
-function render(){renderHome();renderTable();renderFunnel();renderWarn();renderDocs();renderPlans()}
+function renderWins(){
+  const rows=DB.wins||[];
+  const sum=f=>rows.reduce((x,w)=>x+(+w[f]||0),0);
+  const bureauN=new Set(rows.map(w=>w.bureau)).size;
+  const sel=document.getElementById("fWinBureau");
+  if(sel){
+    const bureaus=[...new Set(rows.map(w=>w.bureau))].sort();
+    if(sel.options.length-1!==bureaus.length){sel.innerHTML='<option value="">全部</option>'+bureaus.map(b=>'<option>'+esc(b)+'</option>').join("");}
+  }
+  const kg=document.getElementById("winKpis");
+  if(kg)kg.innerHTML=[
+    {c:"#15a34a",cl:"var(--green-l)",ic:"🏆",lb:"中商项目数",vl:rows.length,ft:`覆盖 <b>${bureauN}</b> 个路局`},
+    {c:"#2563eb",cl:"var(--primary-l)",ic:"💰",lb:"底价合计",vl:fmt(sum("basePrice"))+" 万",ft:"各包件底价汇总"},
+    {c:"#7c3aed",cl:"var(--purple-l)",ic:"📈",lb:"中商金额合计",vl:fmt(sum("winPrice"))+" 万",ft:"含溢价后成交"},
+    {c:"#d97706",cl:"var(--amber-l)",ic:"➕",lb:"溢价合计",vl:fmt(sum("premium"))+" 万",ft:`平均溢价率 <b>${sum("basePrice")?((sum("premium")/sum("basePrice"))*100).toFixed(1):0}%</b>`}
+  ].map(k=>`<div class="kpi" style="--c:${k.c};--cl:${k.cl}"><div class="lb"><span class="ic">${k.ic}</span>${k.lb}</div><div class="vl">${k.vl}</div><div class="ft">${k.ft}</div></div>`).join("");
+  const tb=document.getElementById("winBody"); if(!tb)return;
+  const fb=sel?sel.value:"";
+  const kw=(document.getElementById("fWinKw").value||"").toLowerCase();
+  const rows2=rows.filter(w=>(!fb||w.bureau===fb)&&(!kw||[w.projName,w.pkgNo,w.route,w.bureau,w.winCompany].join(" ").toLowerCase().includes(kw)));
+  tb.innerHTML=rows2.map((w,i)=>`<tr>
+    <td>${i+1}</td><td style="font-weight:600">${esc(w.bureau)}</td><td>${esc(w.compType||"")}</td>
+    <td class="ell" title="${esc(w.projName||"")}">${esc(w.projName||"")}</td>
+    <td class="ell" title="${esc(w.route||"")}">${esc(w.route||"")}</td>
+    <td>${esc(w.pkgNo||"")}</td><td class="num">${w.hardSleeper||""}</td><td class="num">${w.softSleeper||""}</td><td class="num">${w.seats||""}</td>
+    <td>${esc(w.winDate||"")}</td><td>${esc(w.winCompany||"")}</td>
+    <td class="num">${w.basePrice||""}</td><td class="num">${w.winPrice||""}</td><td class="num">${w.premium||""}</td>
+    <td class="ell" title="${esc(w.noticePdf||"")}">${esc(w.noticePdf||"—")}</td></tr>`).join("")
+    || '<tr><td colspan="15" class="empty">暂无中商台账</td></tr>';
+  const ft=document.getElementById("winFoot");
+  if(ft)ft.textContent=`共 ${rows2.length} / ${rows.length} 条 · 中商金额合计 ${fmt(sum("winPrice"))} 万 · 溢价合计 ${fmt(sum("premium"))} 万`;
+}
+function render(){renderHome();renderTable();renderFunnel();renderWarn();renderDocs();renderPlans();renderWins()}
 
 /* ==================== 云端共享数据：远程 data.json 驱动 + 实时轮询 ==================== */
 const DATA_URL="data.json";
 let _remoteSig="";
-function _sig(d){try{return JSON.stringify({d:(d.docs||[]).length,a:(d.applies||[]).length,p:(d.plans||[]).length,ts:d.updatedAt||""});}catch(e){return String(Math.random());}}
+function _sig(d){try{return JSON.stringify({d:(d.docs||[]).length,a:(d.applies||[]).length,p:(d.plans||[]).length,w:(d.wins||[]).length,ts:d.updatedAt||""});}catch(e){return String(Math.random());}}
 function normalizeDoc(d,idx){return{id:+d.id||(idx+1),bureau:d.bureau||"未知",docTitle:d.docTitle||d.title||"",docNo:d.docNo||d.no||"",
   docUrl:d.docUrl||d.url||"",publishDate:d.publishDate||d.date||"",applyDeadline:d.applyDeadline||"",bidOpenDate:d.bidOpenDate||"",
   depositRequire:+d.depositRequire||0,routeScope:d.routeScope||"",source:d.source||"auto",sourceSite:d.sourceSite||"抓取程序",
@@ -1440,7 +1496,8 @@ function normalizeDoc(d,idx){return{id:+d.id||(idx+1),bureau:d.bureau||"未知",
   marketName:d.marketName||"",updateTime:d.updateTime||""};}
 function applyRemote(data){
   DB={docs:(data.docs||[]).map(normalizeDoc),applies:(data.applies||[]).map((a,i)=>({...a,id:+a.id||(i+1)})),
-      plans:(data.plans||[]).map((p,i)=>({...p,id:+p.id||(i+1)}))};
+      plans:(data.plans||[]).map((p,i)=>({...p,id:+p.id||(i+1)})),
+      wins:(data.wins||[]).map((w,i)=>({...w,id:+w.id||(i+1)}))};
   _remoteSig=_sig(data);save();render();
 }
 function loadRemote(){
@@ -1468,6 +1525,8 @@ bootstrap();
   if(params.get("admin")!=="1"){
     var bar=document.getElementById("adminBar");
     if(bar)bar.style.display="none";
+    var tw=document.getElementById("tabWins");
+    if(tw)tw.style.display="none";
   }
 })();
 </script>
