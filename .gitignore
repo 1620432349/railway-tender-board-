@@ -1,0 +1,12 @@
+# WorkBuddy 内部数据
+.workbuddy/
+
+# 本地 Excel 源文件与临时文件
+*.xlsx
+*.sql
+*.pyc
+__pycache__/
+
+# 旧/样例数据（非看板运行时必需）
+国铁招商网_实时抓取.json
+抓取结果_样例.json
