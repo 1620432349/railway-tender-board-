@@ -21,7 +21,6 @@ html,body{
   font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
   background:var(--bg); color:var(--text); font-size:14px; line-height:1.6;
   -webkit-font-smoothing:antialiased;
-  overflow-x:clip; width:100%;
 }
 /* ---------- 顶栏 ---------- */
 .topbar{
@@ -126,8 +125,9 @@ tbody tr.warn-row{background:var(--red-l)}
 tbody tr.warn-row:hover{background:#fde9e9}
 .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ell{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* 移动端：表格保持最小宽度，在容器内横向滑动，整页不横滚 */
+/* 移动端：内容区可横向滑动(画布模式)，表格保持最小宽度 */
 @media (max-width:768px){
+  .wrap{padding:14px 12px 60px;overflow-x:auto;-webkit-overflow-scrolling:touch}
   table{min-width:880px}
   .tbl-wrap{max-height:70vh}
   .topbar{padding:10px 14px}
