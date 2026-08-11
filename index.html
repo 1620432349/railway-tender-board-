@@ -847,10 +847,13 @@ function seed(){
 }
 /* ==================== 存取 ==================== */
 function load(){
-  try{const s=localStorage.getItem(KEY);if(s){DB=JSON.parse(s);return}}catch(e){}
-  DB=seed();save();
+  _remoteSig=localStorage.getItem(KEY_SIG)||"";
+  try{const s=localStorage.getItem(KEY);if(s){DB=JSON.parse(s);_initialized=true;return}}catch(e){}
+  DB=seed();_initialized=false;save();
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast("本地存储失败")}}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(DB));localStorage.setItem(KEY_SIG,_remoteSig);}catch(e){toast("本地存储失败")}
+}
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),2200)}
 const docOf=id=>DB.docs.find(d=>d.id===id)||{};
 const nextId=arr=>arr.length?Math.max(...arr.map(x=>x.id))+1:1;
@@ -1398,6 +1401,7 @@ function render(){renderHome();renderTable();renderFunnel();renderWarn();renderD
 /* ==================== 云端共享数据：远程 data.json 驱动 + 实时轮询 ==================== */
 const DATA_URL="data.json";
 let _remoteSig="";
+let _initialized=false;
 function _sig(d){try{return JSON.stringify({d:(d.docs||[]).length,a:(d.applies||[]).length,p:(d.plans||[]).length,ts:d.updatedAt||""});}catch(e){return String(Math.random());}}
 function normalizeDoc(d,idx){return{id:+d.id||(idx+1),bureau:d.bureau||"未知",docTitle:d.docTitle||d.title||"",docNo:d.docNo||d.no||"",
   docUrl:d.docUrl||d.url||"",publishDate:d.publishDate||d.date||"",applyDeadline:d.applyDeadline||"",bidOpenDate:d.bidOpenDate||"",
@@ -1405,21 +1409,31 @@ function normalizeDoc(d,idx){return{id:+d.id||(idx+1),bureau:d.bureau||"未知",
   crawlTime:d.crawlTime||"",status:d.status||"new",remark:d.remark||"",projId:d.projId||"",dealType:d.dealType||"",
   dealTypeName:d.dealTypeName||"",noticeType:d.noticeType||"",noticeTypeName:d.noticeTypeName||"",notStatus:d.notStatus||"",
   marketName:d.marketName||"",updateTime:d.updateTime||""};}
-function applyRemote(data){
+function rebuildDB(data){
   DB={docs:(data.docs||[]).map(normalizeDoc),applies:(data.applies||[]).map((a,i)=>({...a,id:+a.id||(i+1)})),
       plans:(data.plans||[]).map((p,i)=>({...p,id:+p.id||(i+1)}))};
-  _remoteSig=_sig(data);save();render();
+}
+function applyRemote(data){
+  const sig=_sig(data);
+  if(sig===_remoteSig){
+    // 云端无变化：首次访问用云端初始化；本地已初始化（含编辑）则保留本地，避免刷新冲掉编辑
+    if(!_initialized){_initialized=true;_remoteSig=sig;rebuildDB(data);save();render();}
+    return false;
+  }
+  const wasInit=_initialized;
+  _initialized=true;_remoteSig=sig;rebuildDB(data);save();render();
+  return wasInit; // 首次初始化不算“更新”
 }
 function loadRemote(){
   return fetch(DATA_URL+"?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
     .then(applyRemote).then(()=>true)
     .catch(e=>{console.warn("远程数据加载失败，使用本地缓存：",e.message);return false;});
 }
-function bootstrap(){loadRemote().then(ok=>{if(!ok){load();render();}});}
+function bootstrap(){load();loadRemote().then(ok=>{if(!ok)render();});}
 function pollRemote(){
   fetch(DATA_URL+"?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{
     if(!d)return;
-    if(_sig(d)!==_remoteSig){applyRemote(d);toast("后台数据已更新，看板已自动刷新");}
+    if(applyRemote(d))toast("后台数据已更新，看板已自动刷新");
   }).catch(()=>{});
 }
 setInterval(pollRemote,60000);
