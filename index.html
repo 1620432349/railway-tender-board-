@@ -197,7 +197,7 @@ tbody tr.warn-row:hover{background:#fde9e9}
     <button class="tab" data-p="p5">竞商文件库</button>
     <button class="tab" data-p="p6">开行计划</button>
   </div>
-  <div class="topbtns">
+  <div class="topbtns" id="adminBar">
     <button class="btn" onclick="importExcel()">Excel导入</button>
     <button class="btn" onclick="exportExcel()">Excel导出</button>
     <button class="btn" onclick="importPlans()">导入开行计划</button>
@@ -1424,6 +1424,14 @@ function exportRemoteData(){
   toast("已导出 data.json：发给管理员重新部署，所有查看链接即同步更新");
 }
 bootstrap();
+/* 管理按钮栏显隐控制：仅 ?admin=1 时显示，对外分享链接默认隐藏 */
+(function(){
+  var params=new URLSearchParams(location.search);
+  if(params.get("admin")!=="1"){
+    var bar=document.getElementById("adminBar");
+    if(bar)bar.style.display="none";
+  }
+})();
 </script>
 </body>
 </html>
