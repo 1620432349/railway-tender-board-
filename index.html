@@ -125,15 +125,20 @@ tbody tr.warn-row{background:var(--red-l)}
 tbody tr.warn-row:hover{background:#fde9e9}
 .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ell{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* 移动端：仅表格/漏斗等宽内容区域内部横向滚动，其余不动 */
+/* 移动端：顶栏固定+Tab内部横滑；内容区整体横向画布；整页宽度不动 */
 @media (max-width:768px){
-  .wrap{padding:14px 12px 60px}
-  .page{overflow:hidden;max-width:100vw}          /* 页面容器不被子元素撑宽 */
+  /* 顶栏：宽度固定不撑开，Tab 按钮超出时内部横滑 */
+  .topbar{flex-wrap:nowrap;padding:10px 12px;overflow:hidden}
+  .brand{font-size:15px;white-space:nowrap;flex-shrink:0}
+  .tabs{overflow-x:auto;flex-wrap:nowrap;flex:1;min-width:0;margin-left:8px;-webkit-overflow-scrolling:touch}
+  .tabs::-webkit-scrollbar{display:none}
+  /* 内容区：像画布一样可整体左右平移，宽内容(表格/漏斗)跟它一起滑 */
+  .wrap{padding:14px 12px 60px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .page{overflow:visible;max-width:none}
   table{min-width:880px}
-  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:70vh}
-  .funnel-box{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:16px 4px}
+  .tbl-wrap{overflow:visible;max-height:none}
+  .funnel-box{overflow:visible;padding:16px 4px}
   .fstep{min-width:700px}
-  .topbar{padding:10px 14px}
 }
 .empty{padding:56px;text-align:center;color:var(--text3);font-size:13.5px}
 .tbl-foot{padding:11px 16px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--text2);border-top:1px solid var(--border)}
