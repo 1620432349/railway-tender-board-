@@ -455,6 +455,7 @@ const BUREAUS=["北京局","上海局","广州局","成都局","武汉局","济�
 const RESULT={pending:{t:"待开标",c:"var(--text2)",bg:"#f1f3f7"},win:{t:"中商",c:"var(--green)",bg:"var(--green-l)"},
 lose:{t:"未中商",c:"var(--text3)",bg:"#f1f3f7"},abort:{t:"流标废标",c:"var(--amber)",bg:"var(--amber-l)"}};
 const KEY="railway_tender_board_v8";
+const KEY_SIG="railway_tender_board_sig_v8";
 const T=()=>new Date();
 const iso=d=>d.toISOString().slice(0,10);
 const days=(a,b)=>a?Math.floor((( b?new Date(b):T())-new Date(a))/864e5):null;
