@@ -42,10 +42,10 @@ TOURISM_API   = SITE + "/gtzs-mhqd/api/notice/selectHomeNotice"  # 旅游专列�
 DETAIL_URL    = SITE + "/#/ann-detail?id="                  # 公告详情页
 
 # ============================================================
-# 目标路局白名单（9 局）— 用于公开模式过滤 & 旅游模式统计
+# 目标路局白名单（4 局）— 2026-08-11 用户要求：上海局、北京局、武汉局、广州局（广东局）
+# 用于公开模式过滤 & 旅游模式统计
 # ============================================================
-TARGET_BUREAUS = ["上海局", "北京局", "广州局", "南宁局", "武汉局",
-                  "郑州局", "南昌局", "乌鲁木齐局", "西安局"]
+TARGET_BUREAUS = ["上海局", "北京局", "武汉局", "广州局"]
 
 # marketName（旅游模式返回的全称）-> 短名 映射
 MARKET_NAME_MAP = {
@@ -236,12 +236,12 @@ def to_doc_tourism(rec):
         "updateTime": rec.get("updateTime", ""),
     }
 
-def crawl_tourism(cookie, allow_all=False):
+def crawl_tourism(cookie, allow_all=False, year="2026"):
     """
     旅游专列模式：一次性请求（size=500 足够，通常 totalPage=1）
-    allow_all=True 时不过滤路局，返回全部
+    allow_all=True 时不过滤路局，返回全部；year 指定只保留该年份发布的公告
     """
-    print(f"正在抓取旅游专列数据（Cookie 认证）…")
+    print(f"正在抓取旅游专列数据（Cookie 认证，年份过滤={year or '不限'}）…")
     obj = fetch_tourism_page(cookie, page=1, size=500)
     recs = obj.get("dataList", [])
     total = obj.get("totalCount", len(recs))
@@ -249,6 +249,11 @@ def crawl_tourism(cookie, allow_all=False):
     out, seen = [], set()
     for r in recs:
         d = to_doc_tourism(r)
+        # 年份过滤（按发布时间 createTime）
+        if year:
+            yr = (d.get("publishDate") or "")[:4]
+            if yr != year:
+                continue
         # 路局过滤（除非 allow_all）
         if not allow_all:
             if d["bureau"] not in TARGET_BUREAUS:
@@ -312,6 +317,7 @@ def main():
     ap.add_argument("--tourism", action="store_true", help="旅游专列模式（需配合 --cookie）")
     ap.add_argument("--cookie", default="", help="登录 Cookie（从浏览器 DevTools → Network → Request Headers → Cookie 复制）")
     ap.add_argument("--all", action="store_true", help="旅游模式下返回全部路局（不过滤白名单）")
+    ap.add_argument("--year", default="2026", help="仅保留该年份发布的旅游列车公告（默认2026，''表示不限）")
     ap.add_argument("--out", default="国铁招商网_实时抓取.json", help="输出 JSON 路径")
     args = ap.parse_args()
 
@@ -327,7 +333,7 @@ def main():
             print("   → 复制完整 Cookie 值作为 --cookie 参数")
             sys.exit(1)
         try:
-            data = crawl_tourism(args.cookie, allow_all=args.all)
+            data = crawl_tourism(args.cookie, allow_all=args.all, year=args.year)
         except RuntimeError as e:
             print(f"❌ 抓取失败：{e}")
             print("   可能原因：Cookie 过期 → 重新登录网站获取新 Cookie")
