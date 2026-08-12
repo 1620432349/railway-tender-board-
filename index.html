@@ -388,7 +388,7 @@ body.admin .only-admin{display:table-cell}
         <div class="hint">文件由抓取程序自动入库；若列表中没有，先到「竞商文件库」录入</div>
       </div>
       <div class="fld"><label>路局</label><input type="text" id="aBureau" readonly style="background:#f7f9fc"></div>
-      <div class="fld"><label>经办人</label><input type="text" id="aApplicant" placeholder="如 张三"></div></div>
+      <div class="fld"><label>报名主体</label><input type="text" id="aApplicant" placeholder="如 遇见美好文旅科技集团有限公司"></div></div>
     </div>
     <div class="grp"><div class="gt">报名信息</div>
       <div class="fgrid">
@@ -835,7 +835,7 @@ function closeMask(id){document.getElementById(id).classList.remove("on")}
 /* ==================== 导入导出 ==================== */
 function exportCsv(){
   const H=["路局","竞商文件","文件编号","报名线路","报名时间","保证金金额","缴纳时间","是否中商","中商时间",
-    "中商金额","合同是否归档","合同归档时间","保证金是否退回","退回时间","退回金额","经办人","备注"];
+    "中商金额","合同是否归档","合同归档时间","保证金是否退回","退回时间","退回金额","报名主体","备注"];
   const rows=filtered().map(a=>{const d=docOf(a.docId);return [a.bureau,d.docTitle,d.docNo,a.applyLine,a.applyTime,
     a.depositAmount,a.depositPayTime,RESULT[a.bidResult].t,a.bidTime,a.bidAmount,
     a.contractReturned==1?"已归档":"未归档",a.contractReturnTime,a.depositRefunded==1?"已退回":"未退回",
@@ -940,7 +940,7 @@ function exportExcel(){
   const dmap={};DB.docs.forEach(d=>dmap[d.id]=d);
   const aRows=DB.applies.map(a=>{const d=dmap[a.docId]||{};return {
     "路局":d.bureau||a.bureau||"","文件编号":d.docNo||"","竞商文件标题":d.docTitle||"",
-    "报名线路":a.applyLine,"报名时间":a.applyTime,"经办人":a.applicant,
+    "报名线路":a.applyLine,"报名时间":a.applyTime,"报名主体":a.applicant,
     "保证金金额(元)":a.depositAmount,"缴纳时间":a.depositPayTime,"缴纳凭证号":a.depositPayNo,
     "是否中商":({"win":"中商","lose":"未中商","pending":"待开标","abort":"流标废标"})[a.bidResult]||"",
     "中商时间":a.bidTime,"中商金额(元)":a.bidAmount,
