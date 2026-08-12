@@ -525,9 +525,7 @@ function renderHome(){
   const applyRate=s.docs?(new Set(DB.applies.map(a=>a.docId)).size/s.docs*100).toFixed(1):0;
   document.getElementById("kpiGrid").innerHTML=[
     {c:"#2563eb",cl:"var(--primary-l)",ic:"📄",lb:"竞商文件总数",vl:s.docs,ft:`自动抓取 <b>${DB.docs.filter(d=>d.source==="auto").length}</b> · 人工录入 <b>${DB.docs.filter(d=>d.source!=="auto").length}</b>`},
-    {c:"#0891b2",cl:"var(--cyan-l)",ic:"✍",lb:"报名项目数",vl:s.applies,ft:`覆盖 <b>${new Set(DB.applies.map(a=>a.bureau)).size}</b> 个路局 · 文件报名率 <b>${applyRate}%</b>`},
-    {c:"#15a34a",cl:"var(--green-l)",ic:"🏆",lb:"中商项目数",vl:s.win,ft:`中商率 <b>${winRate}%</b> · 中商金额 <b>¥${wan(s.winAmount)}</b>`},
-    {c:"#7c3aed",cl:"var(--purple-l)",ic:"⏳",lb:"待开标项目",vl:s.pending,ft:`已出结果 <b>${s.settled}</b> 个 · 合同归档 <b>${s.contract}</b> 份`}
+    {c:"#15a34a",cl:"var(--green-l)",ic:"🏆",lb:"中商项目数",vl:s.win,ft:`中商率 <b>${winRate}%</b> · 中商金额 <b>¥${wan(s.winAmount)}</b>`}
   ].map(k=>`<div class="kpi" style="--c:${k.c};--cl:${k.cl}">
     <div class="lb"><span class="ic">${k.ic}</span>${k.lb}</div>
     <div class="vl">${k.vl}<small>个</small></div><div class="ft">${k.ft}</div></div>`).join("");
@@ -536,15 +534,7 @@ function renderHome(){
   <div class="mcard"><div class="mt"><span>保证金缴纳总额</span><span class="tag" style="background:var(--primary-l);color:var(--primary)">${s.paidCnt} 笔</span></div>
     <div class="mv" style="color:var(--primary)">¥${fmt(s.total)}</div>
     <div class="mbar"><i style="width:${pb}%;background:var(--green)"></i><i style="width:${100-pb}%;background:var(--amber)"></i></div>
-    <div class="mlegend"><span><i style="background:var(--green)"></i>已退 ${pb.toFixed(1)}%</span><span><i style="background:var(--amber)"></i>待退 ${(100-pb).toFixed(1)}%</span></div></div>
-  <div class="mcard"><div class="mt"><span>已退回财务</span><span class="tag" style="background:var(--green-l);color:var(--green)">${s.backCnt} 笔</span></div>
-    <div class="mv" style="color:var(--green)">¥${fmt(s.backAmt)}</div>
-    <div class="ft" style="font-size:11.5px;color:var(--text3);margin-top:12px">资金已回笼，可继续投入下一轮竞商</div></div>
-  <div class="mcard" style="${s.holdAmt>0?'border-color:#f2d9a8;background:linear-gradient(180deg,#fffdf8,#fff)':''}">
-    <div class="mt"><span>待退回保证金</span><span class="tag" style="background:var(--amber-l);color:var(--amber)">${s.holdCnt} 笔</span></div>
-    <div class="mv" style="color:var(--amber)">¥${fmt(s.holdAmt)}</div>
-    <div class="ft" style="font-size:11.5px;color:var(--text3);margin-top:12px">其中已出结果仍未退 <b style="color:var(--red)">¥${fmt(
-      DB.applies.filter(a=>a.bidResult!=="pending"&&+a.depositAmount>0&&a.depositRefunded!=1).reduce((x,a)=>x+ +a.depositAmount,0))}</b>（应立即催办）</div></div>`;
+    <div class="mlegend"><span><i style="background:var(--green)"></i>已退 ${pb.toFixed(1)}%</span><span><i style="background:var(--amber)"></i>待退 ${(100-pb).toFixed(1)}%</span></div></div>`;
   const by={};
   DB.applies.forEach(a=>{(by[a.bureau]=by[a.bureau]||{n:0,w:0,p:0,amt:0});
     by[a.bureau].n++; if(a.bidResult==="win")by[a.bureau].w++; if(a.bidResult==="pending")by[a.bureau].p++;
