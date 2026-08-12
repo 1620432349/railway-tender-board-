@@ -290,8 +290,8 @@ body.admin .only-admin{display:table-cell}
   <div class="card">
     <div class="tbl-wrap"><table id="mainTbl"><thead><tr>
       <th style="width:34px">#</th><th>路局</th><th>竞商文件</th><th>报名线路</th><th>报名时间</th>
-      <th class="num">保证金(元)</th><th>缴纳时间</th><th>是否中商</th><th>中商时间</th><th class="num only-admin">底价/万</th><th class="num only-admin">中商价/万</th><th class="num only-admin">溢价/万</th><th class="only-admin">中商企业</th><th class="only-admin">中商通知书</th>
-      <th>合同归档</th><th>保证金退回</th><th>退回时间</th><th>备注</th><th style="width:96px">操作</th>
+      <th class="num">保证金(元)</th><th>缴纳时间</th><th>是否中商</th><th class="num only-admin">底价/万</th><th class="num only-admin">中商价/万</th><th class="num only-admin">溢价/万</th><th class="only-admin">中商企业</th><th class="only-admin">中商通知书</th>
+      <th>合同归档</th><th>保证金退回</th><th>备注</th><th style="width:96px">操作</th>
     </tr></thead><tbody id="mainBody"></tbody></table></div>
     <div class="tbl-foot"><span id="tblFoot"></span><span id="tblSum"></span></div>
   </div>
@@ -400,23 +400,18 @@ body.admin .only-admin{display:table-cell}
       <div class="fgrid">
         <div class="fld"><label>缴纳金额（元）</label><input type="number" id="aDepAmt" placeholder="0" step="0.01"></div>
         <div class="fld"><label>缴纳时间</label><input type="date" id="aDepTime"></div>
-        <div class="fld"><label>缴纳凭证号</label><input type="text" id="aDepNo" placeholder="银行流水号 / 凭证号"></div>
         <div class="fld"><label>是否退回财务</label><select id="aRefunded"><option value="0">未退回</option><option value="1">已退回</option></select></div>
-        <div class="fld"><label>退回时间</label><input type="date" id="aRefundTime"></div>
-        <div class="fld"><label>实际退回金额（元）</label><input type="number" id="aRefundAmt" step="0.01" placeholder="留空默认等于缴纳金额"></div>
       </div>
     </div>
     <div class="grp"><div class="gt">中商结果</div>
       <div class="fgrid">
         <div class="fld"><label>结果</label><select id="aResult"><option value="pending">待开标</option><option value="win">中商</option><option value="lose">未中商</option><option value="abort">流标废标</option></select></div>
-        <div class="fld"><label>结果公示 / 中商时间</label><input type="date" id="aBidTime"></div>
         <div class="fld full"><label>中商金额（元）</label><input type="number" id="aBidAmt" step="0.01"></div>
       </div>
     </div>
     <div class="grp"><div class="gt">合同归档</div>
       <div class="fgrid">
         <div class="fld"><label>合同是否返回归档</label><select id="aContract"><option value="0">未归档</option><option value="1">已归档</option></select></div>
-        <div class="fld"><label>归档时间</label><input type="date" id="aContractTime"></div>
         <div class="fld full"><label>合同编号</label><input type="text" id="aContractNo"></div>
       </div>
     </div>
@@ -611,13 +606,12 @@ function renderTable(){
       <td class="num">${+a.depositAmount>0?fmt(a.depositAmount):'<span style="color:var(--text3)">免缴</span>'}</td>
       <td style="white-space:nowrap">${a.depositPayTime||"—"}</td>
       <td>${tg(R.t,R.c,R.bg)}</td>
-      <td style="white-space:nowrap">${a.bidTime||"—"}</td><td class="num only-admin">${a.basePriceWan||"—"}</td><td class="num only-admin">${a.winPriceWan||"—"}</td><td class="num only-admin">${a.premiumWan||"—"}</td><td class="only-admin">${esc(a.winCompany||"—")}</td><td class="only-admin ell" title="${esc(a.noticePdf||"")}">${esc(a.noticePdf||"—")}</td>
+      <td class="num only-admin">${a.basePriceWan||"—"}</td><td class="num only-admin">${a.winPriceWan||"—"}</td><td class="num only-admin">${a.premiumWan||"—"}</td><td class="only-admin">${esc(a.winCompany||"—")}</td><td class="only-admin ell" title="${esc(a.noticePdf||"")}">${esc(a.noticePdf||"—")}</td>
       <td>${a.bidResult==="win"?(a.contractReturned==1?tg("已归档","var(--green)","var(--green-l)"):tg("未归档","var(--red)","var(--red-l)")):'<span style="color:var(--text3)">—</span>'}</td>
       <td>${+a.depositAmount>0?(a.depositRefunded==1?tg("已退回","var(--green)","var(--green-l)"):tg("未退回","var(--amber)","var(--amber-l)")):'<span style="color:var(--text3)">—</span>'}</td>
-      <td style="white-space:nowrap">${a.depositRefundTime||"—"}</td>
       <td class="ell" style="max-width:170px;color:var(--text2)" title="${esc(a.remark)}">${esc(a.remark||"—")}</td>
       <td><button class="btn sm" onclick="openApply(${a.id})">编辑</button></td></tr>`;
-  }).join("")||'<tr><td colspan="${isAdmin?19:14}" class="empty">没有符合条件的项目</td></tr>';
+  }).join("")||'<tr><td colspan="${isAdmin?17:12}" class="empty">没有符合条件的项目</td></tr>';
   const sum=rows.reduce((s,a)=>s+(+a.depositAmount||0),0);
   const hold=rows.filter(a=>a.depositRefunded!=1).reduce((s,a)=>s+(+a.depositAmount||0),0);
   document.getElementById("tblFoot").innerHTML=`共 <b>${rows.length}</b> 条 / 全部 ${DB.applies.length} 条`;
@@ -778,10 +772,10 @@ function openApply(id,presetDoc){
   const v=(k,val)=>document.getElementById(k).value=val??"";
   v("aDocId",presetDoc||a.docId||(DB.docs[0]||{}).id);
   v("aLine",a.applyLine);v("aApplyTime",a.applyTime);v("aApplicant",a.applicant);
-  v("aDepAmt",a.depositAmount);v("aDepTime",a.depositPayTime);v("aDepNo",a.depositPayNo);
-  v("aRefunded",a.depositRefunded||0);v("aRefundTime",a.depositRefundTime);v("aRefundAmt",a.depositRefundAmt);
-  v("aResult",a.bidResult||"pending");v("aBidTime",a.bidTime);v("aBidAmt",a.bidAmount);
-  v("aContract",a.contractReturned||0);v("aContractTime",a.contractReturnTime);v("aContractNo",a.contractNo);
+  v("aDepAmt",a.depositAmount);v("aDepTime",a.depositPayTime);
+  v("aRefunded",a.depositRefunded||0);
+  v("aResult",a.bidResult||"pending");v("aBidAmt",a.bidAmount);
+  v("aContract",a.contractReturned||0);v("aContractNo",a.contractNo);
   v("aRemark",a.remark);
   syncBureau();document.getElementById("applyMask").classList.add("on");
 }
@@ -789,15 +783,14 @@ function syncBureau(){document.getElementById("aBureau").value=docOf(+document.g
 function saveApply(){
   const g=k=>document.getElementById(k).value.trim();
   if(!g("aLine")){toast("请填写报名线路");return}
+  const old=editApplyId?DB.applies.find(x=>x.id===editApplyId):{};
   const o={docId:+g("aDocId"),bureau:document.getElementById("aBureau").value,applyLine:g("aLine"),
     applyTime:g("aApplyTime"),applicant:g("aApplicant"),
-    depositAmount:+g("aDepAmt")||0,depositPayTime:g("aDepTime"),depositPayNo:g("aDepNo"),
-    depositRefunded:+g("aRefunded"),depositRefundTime:g("aRefundTime"),depositRefundAmt:g("aRefundAmt")?+g("aRefundAmt"):null,
-    bidResult:g("aResult"),bidTime:g("aBidTime"),bidAmount:g("aBidAmt")?+g("aBidAmt"):null,
-    contractReturned:+g("aContract"),contractReturnTime:g("aContractTime"),contractNo:g("aContractNo"),
+    depositAmount:+g("aDepAmt")||0,depositPayTime:g("aDepTime"),depositPayNo:old.depositPayNo||"",
+    depositRefunded:+g("aRefunded"),depositRefundTime:old.depositRefundTime||null,depositRefundAmt:old.depositRefundAmt??null,
+    bidResult:g("aResult"),bidTime:old.bidTime||null,bidAmount:g("aBidAmt")?+g("aBidAmt"):null,
+    contractReturned:+g("aContract"),contractReturnTime:old.contractReturnTime||null,contractNo:g("aContractNo"),
     remark:g("aRemark")};
-  if(o.depositRefunded==1&&!o.depositRefundTime)o.depositRefundTime=iso(T());
-  if(o.contractReturned==1&&!o.contractReturnTime)o.contractReturnTime=iso(T());
   if(editApplyId){Object.assign(DB.applies.find(x=>x.id===editApplyId),o)}
   else{o.id=nextId(DB.applies);DB.applies.push(o)}
   const dc=DB.docs.find(d=>d.id===o.docId); if(dc&&dc.status==="new")dc.status="applied";
@@ -834,12 +827,12 @@ function delDoc(){
 function closeMask(id){document.getElementById(id).classList.remove("on")}
 /* ==================== 导入导出 ==================== */
 function exportCsv(){
-  const H=["路局","竞商文件","文件编号","报名线路","报名时间","保证金金额","缴纳时间","是否中商","中商时间",
-    "中商金额","合同是否归档","合同归档时间","保证金是否退回","退回时间","退回金额","报名主体","备注"];
+  const H=["路局","竞商文件","文件编号","报名线路","报名时间","保证金金额","缴纳时间","是否中商","中商金额",
+    "合同是否归档","保证金是否退回","报名主体","备注"];
   const rows=filtered().map(a=>{const d=docOf(a.docId);return [a.bureau,d.docTitle,d.docNo,a.applyLine,a.applyTime,
-    a.depositAmount,a.depositPayTime,RESULT[a.bidResult].t,a.bidTime,a.bidAmount,
-    a.contractReturned==1?"已归档":"未归档",a.contractReturnTime,a.depositRefunded==1?"已退回":"未退回",
-    a.depositRefundTime,a.depositRefundAmt,a.applicant,a.remark]});
+    a.depositAmount,a.depositPayTime,RESULT[a.bidResult].t,a.bidAmount,
+    a.contractReturned==1?"已归档":"未归档",a.depositRefunded==1?"已退回":"未退回",
+    a.applicant,a.remark]});
   const csv="\uFEFF"+[H,...rows].map(r=>r.map(c=>`"${String(c??"").replace(/"/g,'""')}"`).join(",")).join("\r\n");
   dl(new Blob([csv],{type:"text/csv;charset=utf-8"}),`路局竞商明细_${iso(T())}.csv`);toast("已导出 CSV");
 }
