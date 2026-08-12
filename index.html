@@ -339,14 +339,14 @@ body.admin .only-admin{display:table-cell}
 <div class="page" id="p5">
   <div class="card filters">
     <div class="frow">
-      <span class="flabel">来源</span>
-      <select id="fSource"><option value="">全部</option><option value="auto">自动抓取</option><option value="manual">人工录入</option></select>
+      <span class="flabel">路局</span>
+      <span class="chip on" data-doc-bureau="__all">全部</span>
+      <span id="docBureauChips" style="display:contents"></span>
       <span class="flabel">处理状态</span>
       <select id="fDocStatus"><option value="">全部</option><option value="new">待评估</option><option value="applied">已报名</option><option value="ignored">已放弃</option></select>
       <input type="text" class="search" id="fDocKw" placeholder="搜索标题 / 编号 / 路局">
       <button class="btn pri" onclick="openDoc()" style="margin-left:auto">+ 录入文件</button>
-      <button class="btn" onclick="importCrawl()">导入抓取结果(含旅游专列)</button>
-      <button class="btn warn" onclick="keepTourismOnly()">仅保留旅游专列</button>
+      <button class="btn" onclick="importCrawl()">导入抓取结果</button>
     </div>
   </div>
   <div class="card">
@@ -731,11 +731,12 @@ function renderWarn(){
     '<div class="card empty">🎉 当前没有异常项目，所有流程节点都在正常推进</div>';
 }
 /* ==================== 渲染：文件库 ==================== */
+let selDocBureaus=new Set();
 function renderDocs(){
-  const s=document.getElementById("fSource").value,st=document.getElementById("fDocStatus").value,
+  const st=document.getElementById("fDocStatus").value,
         kw=document.getElementById("fDocKw").value.trim().toLowerCase();
   const rows=DB.docs.filter(d=>{
-    if(s&&(d.source||"manual")!==s)return false;
+    if(selDocBureaus.size&&!selDocBureaus.has(d.bureau))return false;
     if(st&&(d.status||"new")!==st)return false;
     if(kw&&![d.docTitle,d.docNo,d.bureau].join(" ").toLowerCase().includes(kw))return false;
     return true;
@@ -756,6 +757,11 @@ function renderDocs(){
     <td><button class="btn sm" onclick="openDoc(${d.id})">编辑</button> <button class="btn sm" onclick="openApply(null,${d.id})">报名</button></td></tr>`;
   }).join("")||'<tr><td colspan="12" class="empty">暂无竞商文件</td></tr>';
   document.getElementById("docFoot").innerHTML=`共 <b>${rows.length}</b> 个文件 / 全部 ${DB.docs.length} 个`;
+  /* 路局 chip */
+  const cnt={};DB.docs.forEach(d=>cnt[d.bureau]=(cnt[d.bureau]||0)+1);
+  document.getElementById("docBureauChips").innerHTML=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])
+    .map(b=>`<span class="chip ${selDocBureaus.has(b)?'on':''}" data-doc-bureau="${b}">${b}<span class="n">${cnt[b]}</span></span>`).join("");
+  document.querySelector('[data-doc-bureau="__all"]').classList.toggle("on",selDocBureaus.size===0);
 }
 /* ==================== 弹窗操作 ==================== */
 function fillBureauSel(){
@@ -964,8 +970,14 @@ document.addEventListener("click",e=>{
   renderTable();});
 ["fResult","fContract","fRefund","fFrom","fTo"].forEach(i=>document.getElementById(i).onchange=renderTable);
 document.getElementById("fKw").oninput=renderTable;
-["fSource","fDocStatus"].forEach(i=>document.getElementById(i).onchange=renderDocs);
+["fDocStatus"].forEach(i=>document.getElementById(i).onchange=renderDocs);
 document.getElementById("fDocKw").oninput=renderDocs;
+document.addEventListener("click",e=>{
+  const c=e.target.closest(".chip[data-doc-bureau]");if(!c)return;
+  const b=c.dataset.docBureau;
+  if(b==="__all")selDocBureaus.clear();
+  else selDocBureaus.has(b)?selDocBureaus.delete(b):selDocBureaus.add(b);
+  renderDocs();});
 document.getElementById("fPlanBureau").onchange=renderPlans;
 document.getElementById("fPlanKw").oninput=renderPlans;
 document.querySelectorAll(".mask").forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.remove("on")});
